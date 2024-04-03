@@ -1,4 +1,4 @@
-# Test Case format
+# Test Case Readme
 
 To generate test cases,
 ```
@@ -11,6 +11,7 @@ Where
 
 `RP_testcase.txt` is the testcase in example figure of research paper.
 
+## TC format
 ```
 B (Number of blocks)
 S (Number of VMs in each machine)
