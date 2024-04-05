@@ -3,6 +3,7 @@
 .vscode
 .pyc
 .pycache
+*.lp
 
 # Compiled Object files
 *.slo

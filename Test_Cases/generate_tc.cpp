@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     // Generate test case for each job
     for (int k = 1; k <= K; ++k) {
         int deadline = random(1, 500); // Deadline for job k
-        int num_chunks = random(1, N); // Number of chunks accessed by job k
+        int num_chunks = random(1, 2*N); // Number of chunks accessed by job k
 
         // Set to store generated chunk IDs
         vector<int> chunk_ids;
