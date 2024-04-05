@@ -4,6 +4,7 @@
 .pyc
 .pycache
 *.lp
+*.mps
 
 # Compiled Object files
 *.slo

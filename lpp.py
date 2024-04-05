@@ -44,6 +44,7 @@ except FileNotFoundError:
     sys.exit(1)
 
 model = gp.Model()
+model.params.LogToConsole = 0
 objective = gp.LinExpr(0)
 variable_cnt = 0
 time_reqd = defaultdict(int)
@@ -93,19 +94,34 @@ for machines in range(1,N+1):
 
 model.setObjective(objective,GRB.MINIMIZE)
 model.optimize()
-model.write("h.lp")
-# Check optimization status
+#model.write("h.lp")
+
+# Post Processing
+active_machines = [] # For getting list of active machines
+machine_to_chunks = defaultdict(list)
+
 if model.status == GRB.OPTIMAL:
     # Print the objective value
-    print('Objective:', model.objVal)
-    # Print the values of active_node variables
+    print('Number of active Nodes:', model.objVal)
+
+    # Get the active nodes
     for machines in range(1, N + 1):
-        print(f'Active node {machines}: {active_node[machines].x}')
-    # Print the values of placement_vars variables
+        if active_node[machines].x == 1:
+            active_machines.append(machines)
+
+    # Get the machines assigned in each chunks
     for chunk, machines in placement_vars:
-        print(f'Chunk {chunk} assigned to machine {machines}: {placement_vars[(chunk, machines)].x}')
-    # Print the values of F variables
+        if placement_vars[(chunk, machines)].x == 1:
+            #print(f'Chunk {chunk} assigned to machine {machines}')
+            machine_to_chunks[machines].append(chunk)
+
+    # Print the chunks in each machines
+    for machines in active_machines:
+        print(f"Chunks mapped to Machine {machines}:",machine_to_chunks[machines])
+
+    # Get the number of assigned slots
     for chunk, machines, deadline in F:
-        print(f'F value for chunk {chunk}, machine {machines}, deadline {deadline}: {F[(chunk, machines, deadline)].x}')
+        if F[(chunk, machines, deadline)].x > 0:
+            print(f'Timeslots for chunk {chunk} in machine {machines} before deadline {deadline}: {F[(chunk, machines, deadline)].x}')
 else:
-    print('Optimization was not successful.')
+    print('Cant find a solution to this problem')
