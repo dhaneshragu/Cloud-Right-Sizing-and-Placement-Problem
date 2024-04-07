@@ -145,9 +145,11 @@ int main()
                 int end = idx.second.second;
                 //Schedule the chunks in node
                 schedule(v,start,end,S,d,m);
-                while(b>0)
+                while(b>0 && v.size())
                 {
-                    cout<<"B_rem: "<<b<<endl;
+                    idx = find_Hb_indices(v,B,S,d);
+                    start = idx.second.first;
+                    end = idx.second.second;
                     schedule(v,start,end,S,d,m);
                 }
             }
@@ -159,9 +161,8 @@ int main()
             m++; b=B; //Create a new Machine
             machines_scheduled.push_back(m);
             schedule(v,0,B-1,S,d,m);
-            while(b>0)
+            while(b>0 && v.size())
             {
-                cout<<"B_rem: "<<b<<endl;
                 schedule(v,0,B-1,S,d,m);
             }
         }
