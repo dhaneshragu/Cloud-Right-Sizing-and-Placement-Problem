@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     int B = stoi(argv[1]);  // Number of chunks that can be hosted in a Cloud Server
     int S = stoi(argv[2]);  // Number of VMs in a single Cloud Server
     int K = stoi(argv[3]);  // Total number of Jobs
-    int N = random(B*2,B*7); // Total number of chunks
+    int N = random(B,B*3); // Total number of chunks
 
     // Open file for writing
     ofstream file("testcase.txt");
@@ -40,8 +40,8 @@ int main(int argc, char *argv[]) {
 
     // Generate test case for each job
     for (int k = 1; k <= K; ++k) {
-        int deadline = random(1, 500); // Deadline for job k
-        int num_chunks = random(1, 2*N); // Number of chunks accessed by job k
+        int deadline = random(1, 100); // Deadline for job k
+        int num_chunks = random(1, 1.5*N); // Number of chunks accessed by job k
 
         // Set to store generated chunk IDs
         vector<int> chunk_ids;

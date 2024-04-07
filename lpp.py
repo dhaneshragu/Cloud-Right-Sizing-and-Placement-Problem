@@ -87,7 +87,7 @@ for machines in range(1,N+1):
         for chunk in chunk_list:
             # Computation constraint
             expr += F.get((chunk,machines,deadline),0)
-        model.addConstr(expr <= deadline*active_node[machines]*S)
+        model.addConstr(expr <= deadline*active_node[machines])
 
 for machines in range(1,N+1):
     objective+= active_node[machines] 

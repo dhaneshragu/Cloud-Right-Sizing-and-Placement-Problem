@@ -5,6 +5,7 @@
 .pycache
 *.lp
 *.mps
+cred.cpp
 
 # Compiled Object files
 *.slo
