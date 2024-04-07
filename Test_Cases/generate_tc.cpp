@@ -2,14 +2,14 @@
 #include <fstream>
 #include <vector>
 #include <random>
-#include <set> // Include the set header
+#include <set> 
 using namespace std;
 
 // Function to generate a random number between min and max
 int random(int min, int max) {
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> dist(min, max);
+    static random_device rd;
+    static mt19937 gen(rd());
+    uniform_int_distribution<int> dist(min, max);
     return dist(gen);
 }
 
