@@ -35,46 +35,54 @@ pair<int,pair<int,int>>find_Hb_indices(deque<int>&q, int B, int S, int d)
     return {sum,{i,j}};
 }
 
+// Pass 1 tells if its scheduling for a new deadline ( check B constraint, add to machines) or we are trying to satisfy remaining deadlines of that job (Optimising)
 void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true)
 {
-    e = min<int>(e,q.size());
+    e = min<int>(e,q.size()-1); // sort from s to e. This is an edge case for when e is very large than size of queue
     sort(q.begin()+s, q.begin()+e, [&](const int& chunk1, const int& chunk2) {
             return compareByTimeSlotsLeft(chunk1, chunk2, d);
     });
-    while(s<=e && q.size() && b>0)
+
+    // If pass1, then check for b constraint, otherwise no
+    while(s<=e && q.size() && (pass1 ? b>0 : true))
     {
         // Minimum is taken to ensure that no two VMs can access the same chunk in a given time slot
+        //TODO: take previous deadline for the upper limit
         if(S*d-min(chunk_ts[q[s]][d],d)-slots_scheduled[m]>=0)
         {
-            slots_scheduled[m]+=min(chunk_ts[q[s]][d],d);
+        
+            slots_scheduled[m]+=min(chunk_ts[q[s]][d],d); // Get the number of slots scheduled for that machine
             F[q[s]][m][d]+=min(chunk_ts[q[s]][d],d); //To get the final schedule
-            chunk_ts[q[s]][d] -= min(chunk_ts[q[s]][d],d); 
-            if(pass1)
+            chunk_ts[q[s]][d] -= min(chunk_ts[q[s]][d],d);  // Decrease the required ts for a chunk
+            if(pass1) // If its pass 1, we are assigning this chunk new, so decrease b and store it in machine to chunks
             {
                 machines_to_chunks[m].push_back(q[s]);
                 b--;
             }
-            if(chunk_ts[q[s]][d]==0)
+            if(chunk_ts[q[s]][d]==0) // If all the timeslots are over(normal case)
             {
                 q.erase(q.begin()+s);
                 e--;
             }
-            else{
-                cout<<"Ahh"<<endl;
+            else{ // For the special case, when min(,d) is considered, move to next one
                 s++;
             }
             
         }
-        else{
-            chunk_ts[q[s]][d]-= min((S*d-slots_scheduled[m]),d);
-            F[q[s]][m][d]+=min((S*d-slots_scheduled[m]),d);
-            slots_scheduled[m] += min((S*d-slots_scheduled[m]),d); // Slots scheduled are over
+        else{ // When all slots cant be scheduled
+            chunk_ts[q[s]][d]-= min((S*d-slots_scheduled[m]),d); // Decrement the time slot required for that chunk
+            F[q[s]][m][d]+=min((S*d-slots_scheduled[m]),d); // Get the information of how many slots scheduled where for this chunk
+            slots_scheduled[m] += min((S*d-slots_scheduled[m]),d); //number of slots scheduled in that machine
             if(pass1)
             {
                 machines_to_chunks[m].push_back(q[s]);
                 b--;
             }
+            // When all slots are scheduled, break, otherwise try to schedule the next node
+            if(slots_scheduled[m]==S*d)
             break;
+            else
+            s++;
         }
     }
 
@@ -122,62 +130,80 @@ int main()
     b = B; // Globally b slots are available
     for(auto it = deadlines.begin(); it!=deadlines.end(); it++)
     {
-        vector<int>machines_scheduled;
-        //Sort based on deadline
+        set<int>machines_scheduled; // To store the new machines that have been created for this deadline
         int d = *it;
         deque<int>v = deadline_chunks[d];
         while(!v.empty())
         {
+            //Sort based on timeslots required for that deadline
             sort(v.begin(), v.end(), [&](const int& chunk1, const int& chunk2) {
             return compareByTimeSlotsLeft(chunk1, chunk2, d);
             });
-
+            
+            // Dont count the ones that are already finished
             while(v.size() && chunk_ts[v.front()][d]==0) v.pop_front();
 
+            // While popping out, it might become empty, so break here
+            if(v.empty()) break;
+
+            // Finds the first B length window where sum is >= S*d, have used sliding window concept here for optimisation
+            pair<int,pair<int,int>>idx = find_Hb_indices(v,B,S,d);
+            int start = idx.second.first;
+            int end = idx.second.second;
+
+            // Special optimisation case to reuse the free chunk slot in previous machine
+            while(b>0 && b!=B && S*d-slots_scheduled[m]>0 && v.size()) //Some slot of previous machine is left to be filled
+            {
+                machines_scheduled.insert(m);
+                schedule(v,start,end,S,d,m); // Schedule these nodes in that
+            }
+
+            // this is to check the sum of largest B chunks. If its <=S*d then we can schedule any of B chunks in VMs, otherwise we have to use the Hb indices
             int sum = 0; int lim = B;
             for(int i=v.size()-1; i>=0 && lim>0; i--)
             {
                 sum+=min(chunk_ts[v[i]][d],d); lim--;
             }
+
+            // Make a new machine and schedule in that
             if(sum>S*d)
             {
-                pair<int,pair<int,int>>idx = find_Hb_indices(v,B,S,d);
-                int start = idx.second.first;
-                int end = idx.second.second;
                 m++; b=B; //Create a new Machine
-                machines_scheduled.push_back(m);
+                machines_scheduled.insert(m);
                 //Schedule the chunks in node
                 schedule(v,start,end,S,d,m);
             }
             else break;
         }
 
+        // When sum <=S*d case, schedule B chunks at once here
         while(!v.empty())
         {
-
             m++; b=B; //Create a new Machine
-            machines_scheduled.push_back(m);
+            machines_scheduled.insert(m);
             schedule(v,0,B-1,S,d,m);
         }
 
         //Phase 2
         auto next_deadline = it;
         next_deadline++;
-        //auto it1=next_deadline; it1!=deadlines.end();it1++
+
         for(auto machines:machines_scheduled)
         {
-            //Get list of chunks scheduled in this machine
+            // Go to all deadlines after current
             for(auto it1=next_deadline; it1!=deadlines.end();it1++)
             {
                 int d1 = *it1;
                 deque<int>q;
+
+                //Get list of chunks scheduled in this machine
                 for(auto chunks : machines_to_chunks[machines]){ 
                     if(chunk_ts[chunks][d1] >0)
                     q.push_back(chunks);
                 }
 
                 if(q.empty())continue;
-
+                // Here we dont have to count the machines or decrease the slots, so made phase1 as false
                 schedule(q,0,q.size()-1,S,d1,machines,false);
             }
             
