@@ -59,7 +59,10 @@ void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true)
                 q.erase(q.begin()+s);
                 e--;
             }
-            else break;
+            else{
+                cout<<"Ahh"<<endl;
+                s++;
+            }
             
         }
         else{

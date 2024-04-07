@@ -76,8 +76,8 @@ for chunk in chunk_list:
             expr += F[(chunk,machines,deadline)]
             variable_cnt += 1
             # Activity constraint
-            model.addConstr(F[(chunk,machines,deadline)] <= M * (placement_vars[(chunk,machines)]))
-            model.addConstr(F[(chunk,machines,deadline)] <= M * (active_node[machines]))
+            model.addConstr(F[(chunk,machines,deadline)] <= deadline * (placement_vars[(chunk,machines)]))
+            model.addConstr(F[(chunk,machines,deadline)] <= deadline * (active_node[machines]))
         # Add deadline constraint
         model.addConstr(expr >= time_reqd[chunk])
 
@@ -87,7 +87,7 @@ for machines in range(1,N+1):
         for chunk in chunk_list:
             # Computation constraint
             expr += F.get((chunk,machines,deadline),0)
-        model.addConstr(expr <= deadline*active_node[machines])
+        model.addConstr(expr <= deadline*active_node[machines]*S)
 
 for machines in range(1,N+1):
     objective+= active_node[machines] 
