@@ -75,7 +75,7 @@ for chunk in chunk_list:
             F[(chunk,machines,deadline)] = model.addVar(vtype=GRB.INTEGER, lb=0, name=f'F_{chunk}_{machines}_{deadline}')
             expr += F[(chunk,machines,deadline)]
             variable_cnt += 1
-            # Activity constraint
+            # Activity constraint :- number of slots scheduled for a chunk till that deadline should be upper bounded by deadline (for no two VM can access same chunk in a single time slot constraint)
             model.addConstr(F[(chunk,machines,deadline)] <= deadline * (placement_vars[(chunk,machines)]))
             model.addConstr(F[(chunk,machines,deadline)] <= deadline * (active_node[machines]))
         # Add deadline constraint
