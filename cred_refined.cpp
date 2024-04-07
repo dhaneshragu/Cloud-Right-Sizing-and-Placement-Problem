@@ -138,33 +138,23 @@ int main()
             }
             if(sum>S*d)
             {
-                m++; b=B; //Create a new Machine
-                machines_scheduled.push_back(m);
                 pair<int,pair<int,int>>idx = find_Hb_indices(v,B,S,d);
                 int start = idx.second.first;
                 int end = idx.second.second;
+                m++; b=B; //Create a new Machine
+                machines_scheduled.push_back(m);
                 //Schedule the chunks in node
                 schedule(v,start,end,S,d,m);
-                while(b>0 && v.size())
-                {
-                    idx = find_Hb_indices(v,B,S,d);
-                    start = idx.second.first;
-                    end = idx.second.second;
-                    schedule(v,start,end,S,d,m);
-                }
             }
             else break;
         }
 
         while(!v.empty())
         {
+
             m++; b=B; //Create a new Machine
             machines_scheduled.push_back(m);
             schedule(v,0,B-1,S,d,m);
-            while(b>0 && v.size())
-            {
-                schedule(v,0,B-1,S,d,m);
-            }
         }
 
         //Phase 2
