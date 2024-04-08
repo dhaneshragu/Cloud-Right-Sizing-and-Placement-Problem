@@ -8,18 +8,19 @@ map<int,map<int,map<int,int>>>F; //F(c,n,i)
 map<int,set<int>>deadline_to_chunks;
 map<int,deque<int>>deadline_chunks;
 set<int>deadlines;
+map<int,map<int,int>>num_slots_sofar; // num[chunk][machine]
 int B;
 int S;
 int K;   
 int b;
 
 // comparison function to sort based on number of time slots left
-static bool compareByTimeSlotsLeft(const int& chunk1, const int& chunk2, const int d) {
+static bool compareByTimeSlotsLeft(const int& chunk1, const int& chunk2, const int d, const int m) {
     // Get the number of time slots left for each chunk
     int timeSlotsLeft1 = chunk_ts[chunk1][d];
     int timeSlotsLeft2 = chunk_ts[chunk2][d];
     // Sort in ascending order of time slots left
-    return min(timeSlotsLeft1,d) < min(timeSlotsLeft2,d);
+    return min(timeSlotsLeft1,d-num_slots_sofar[chunk1][m]) < min(timeSlotsLeft2,d-num_slots_sofar[chunk2][m]);
 }
 
 pair<int,pair<int,int>>find_Hb_indices(deque<int>&q, int B, int S, int d)
@@ -46,7 +47,7 @@ void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true)
 {
     e = min<int>(e,q.size()-1); // sort from s to e. This is an edge case for when e is very large than size of queue
     sort(q.begin()+s, q.begin()+e, [&](const int& chunk1, const int& chunk2) {
-            return compareByTimeSlotsLeft(chunk1, chunk2, d);
+            return compareByTimeSlotsLeft(chunk1, chunk2, d,m);
     });
 
     // If pass1, then check for b constraint, otherwise no
@@ -54,12 +55,13 @@ void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true)
     {
         // Minimum is taken to ensure that no two VMs can access the same chunk in a given time slot
         //TODO: take previous deadline for the upper limit
-        if(S*d-min(chunk_ts[q[s]][d],d)-slots_scheduled[m]>=0)
+        if(S*d-min(chunk_ts[q[s]][d],d-num_slots_sofar[q[s]][m])-slots_scheduled[m]>=0)
         {
         
-            slots_scheduled[m]+=min(chunk_ts[q[s]][d],d); // Get the number of slots scheduled for that machine
-            F[q[s]][m][d]+=min(chunk_ts[q[s]][d],d); //To get the final schedule
-            chunk_ts[q[s]][d] -= min(chunk_ts[q[s]][d],d);  // Decrease the required ts for a chunk
+            slots_scheduled[m]+=min(chunk_ts[q[s]][d],d-num_slots_sofar[q[s]][m]); // Get the number of slots scheduled for that machine
+            F[q[s]][m][d]+=min(chunk_ts[q[s]][d],d-num_slots_sofar[q[s]][m]); //To get the final schedule
+            chunk_ts[q[s]][d] -= min(chunk_ts[q[s]][d],d-num_slots_sofar[q[s]][m]);  // Decrease the required ts for a chunk
+            num_slots_sofar[q[s]][m]+=min(chunk_ts[q[s]][d],d-num_slots_sofar[q[s]][m]);
             if(pass1) // If its pass 1, we are assigning this chunk new, so decrease b and store it in machine to chunks
             {
                 machines_to_chunks[m].push_back(q[s]);
@@ -76,9 +78,10 @@ void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true)
             
         }
         else{ // When all slots cant be scheduled
-            chunk_ts[q[s]][d]-= min((S*d-slots_scheduled[m]),d); // Decrement the time slot required for that chunk
-            F[q[s]][m][d]+=min((S*d-slots_scheduled[m]),d); // Get the information of how many slots scheduled where for this chunk
-            slots_scheduled[m] += min((S*d-slots_scheduled[m]),d); //number of slots scheduled in that machine
+            chunk_ts[q[s]][d]-= min((S*d-slots_scheduled[m]),d-num_slots_sofar[q[s]][m]); // Decrement the time slot required for that chunk
+            F[q[s]][m][d]+=min((S*d-slots_scheduled[m]),d-num_slots_sofar[q[s]][m]); // Get the information of how many slots scheduled where for this chunk
+            slots_scheduled[m] += min((S*d-slots_scheduled[m]),d-num_slots_sofar[q[s]][m]); //number of slots scheduled in that machine
+            num_slots_sofar[q[s]][m]+=min((S*d-slots_scheduled[m]),d-num_slots_sofar[q[s]][m]);
             if(pass1)
             {
                 machines_to_chunks[m].push_back(q[s]);
@@ -191,7 +194,7 @@ int main()
         {
             //Sort based on timeslots required for that deadline
             sort(v.begin(), v.end(), [&](const int& chunk1, const int& chunk2) {
-            return compareByTimeSlotsLeft(chunk1, chunk2, d);
+            return compareByTimeSlotsLeft(chunk1, chunk2, d,m);
             });
             
             // Dont count the ones that are already finished
@@ -216,7 +219,7 @@ int main()
             int sum = 0; int lim = B;
             for(int i=v.size()-1; i>=0 && lim>0; i--)
             {
-                sum+=min(chunk_ts[v[i]][d],d); lim--;
+                sum+=min(chunk_ts[v[i]][d],d-num_slots_sofar[v[i]][m]); lim--;
             }
 
             // Make a new machine and schedule in that
