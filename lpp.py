@@ -51,6 +51,7 @@ time_reqd = defaultdict(int)
 active_node = {}
 placement_vars = {}
 M = 1e6 # Large constant
+N = N//B
 
 # Active node
 for machines in range(1,N+1):
