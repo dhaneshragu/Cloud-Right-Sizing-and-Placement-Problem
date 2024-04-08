@@ -165,7 +165,7 @@ vector<node> scheduleAll(vector<deadline>& deadlines)
 
 int main()
 {
-    fstream fin("../Test_Cases/testcase.txt");
+    fstream fin("../Test_Cases/RP_testcase.txt");
     int k;
     fin>>gloabalB;
     fin>>globalS;
@@ -187,11 +187,11 @@ int main()
         for(auto x:mp)
         {
             d.chunks.push_back({x.second,x.first});
-            cout<<i<<" "<<x.first<<" "<<x.second<<endl;
+            // cout<<i<<" "<<x.first<<" "<<x.second<<endl;
         }
         deadlines.push_back(d);
-        vector<node> ans = scheduleOneDeadline(d);
-        cout<<ans.size()<<endl;
+        // vector<node> ans = scheduleOneDeadline(d);
+        // cout<<ans.size()<<endl;
     }
     vector<node> finalAns = scheduleAll(deadlines);
     cout<<finalAns.size()<<endl;
