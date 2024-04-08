@@ -54,7 +54,7 @@ void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true)
     while(s<=e && q.size() && (pass1 ? b>0 : true))
     {
         // Minimum is taken to ensure that no two VMs can access the same chunk in a given time slot
-        //TODO: take previous deadline for the upper limit
+        // Number of slots that can be scheduled for a chunk should be <= d - number of slots scheduled so far in that machine
         if(S*d-min(chunk_ts[q[s]][d],d-num_slots_sofar[q[s]][m])-slots_scheduled[m]>=0)
         {
         
