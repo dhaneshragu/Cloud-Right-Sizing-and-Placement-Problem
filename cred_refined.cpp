@@ -98,8 +98,11 @@ void ScheduleVMs(int machine_id)
 {
     cout<<"Proper Schedule in machine : "<<machine_id<<endl;
     map<int,int> timeslots;
+    map<int,int> lastscheduled;
     auto maxdealine = deadlines.rbegin();
     vector<vector<int>> VMs (S, vector<int> (*maxdealine,0));
+    for(auto it:machines_to_chunks[machine_id])
+        lastscheduled[it]=*maxdealine;
     for (auto rit = deadlines.rbegin(); rit != deadlines.rend(); rit++) 
     {
         int d = *rit;
@@ -109,6 +112,7 @@ void ScheduleVMs(int machine_id)
             // cout<<"Chunk    :"<<it<<"   Deadline   :"<<d<<"     Slots :"<<slots<<endl;
             int i =1;
             int skip=0;
+            d = min(d,lastscheduled[it]);
             while(i<=slots)
             {
                 int Vmid = timeslots[d-i-skip];
@@ -118,26 +122,24 @@ void ScheduleVMs(int machine_id)
                     continue;
                 }
                 VMs[Vmid][d-i-skip]=it;
+                lastscheduled[it] = d-i-skip;
                 timeslots[d-i-skip]++;
                 i++;
             }
         }
     }
-    cout<<"Slots            :   ";
-    for(int i=0;i<*maxdealine;i++)
-    {
-        cout<<i<<"  ";
-    }
-    cout<<endl;
+    // cout<<"Slots            :   ";
+    // for(int i=0;i<*maxdealine;i++)
+    // {
+    //     cout<<i<<"  ";
+    // }
+    // cout<<endl;
     for(int i =0;i<S;i++)
     {
         cout<<"Scheudle for VM "<<i+1<<" :  ";
         for(int j = 0;j<*maxdealine;j++)
         {
-            if(VMs[i][j]!=0)
-            cout<<VMs[i][j]<<"  ";
-            else
-            cout<<"   ";
+            cout<<"Slot "<<j<<": "<<VMs[i][j]<<"  ";
         }
         cout<<endl;
     }
