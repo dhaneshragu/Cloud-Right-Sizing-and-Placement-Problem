@@ -45,13 +45,15 @@ except FileNotFoundError:
 
 model = gp.Model()
 model.params.LogToConsole = 0
+model.params.NodefileStart = 0.5  # Compress and write nodes to disk when memory usage exceeds 50%
+model.params.Threads = 2
+model.params.PreSparsify = 2
 objective = gp.LinExpr(0)
 variable_cnt = 0
 time_reqd = defaultdict(int)
 active_node = {}
 placement_vars = {}
-M = 1e6 # Large constant
-N = N//B
+N = N // B
 
 # Active node
 for machines in range(1,N+1):
