@@ -135,7 +135,7 @@ void ScheduleVMs(int machine_id)
             int schedulingDeadline = min(d,lastscheduled[it]);
             while(i<=slots)
             {
-                cout<<"SchedulingDeadline-i-skip: "<<schedulingDeadline-i-skip<<endl;
+                if(schedulingDeadline-i-skip<0){i++; continue;}
                 int Vmid = timeslots[schedulingDeadline-i-skip];
                 if(Vmid>=S)
                 {
@@ -143,6 +143,7 @@ void ScheduleVMs(int machine_id)
                     continue;
                 }
                 F[it][machine_id][origDeadline]--;
+                machine_free[machine_id][schedulingDeadline-i-skip].insert(it);
                 VMs[Vmid][schedulingDeadline-i-skip].first=it;
                 int job = getJob(it,origDeadline);
                 VMs[Vmid][schedulingDeadline-i-skip].second= job;
