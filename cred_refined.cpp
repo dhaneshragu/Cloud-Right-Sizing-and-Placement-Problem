@@ -10,6 +10,7 @@ map<int,deque<int>>deadline_chunks;
 set<int>deadlines;
 map<int,map<int,int>>num_slots_sofar; // num[chunk][machine]
 map<int,map<int,vector<pair<int,int>>>>job_chunks; //job[chunks][deadline] = {TS,jobid}
+map<int,map<int,set<int>>>machine_free;// machine[m][TS]
 int B;
 int S;
 int K;   
@@ -126,22 +127,26 @@ void ScheduleVMs(int machine_id)
         int d = *rit;
         for(auto it:machines_to_chunks[machine_id])
         {
-            int slots = F[it][machine_id][d];
+            int origDeadline = d;
+            int slots = F[it][machine_id][origDeadline];
             int i =1;
             int skip=0;
-            d = min(d,lastscheduled[it]);
+            int schedulingDeadline = min(d,lastscheduled[it]);
             while(i<=slots)
             {
-                int Vmid = timeslots[d-i-skip];
+                cout<<"SchedulingDeadline-i-skip: "<<schedulingDeadline-i-skip<<endl;
+                int Vmid = timeslots[schedulingDeadline-i-skip];
                 if(Vmid>=S)
                 {
                     skip++;
                     continue;
                 }
-                VMs[Vmid][d-i-skip].first=it;
-                VMs[Vmid][d-i-skip].second=getJob(it,d);
-                lastscheduled[it] = d-i-skip;
-                timeslots[d-i-skip]++;
+                F[it][machine_id][origDeadline]--;
+                VMs[Vmid][schedulingDeadline-i-skip].first=it;
+                int job = getJob(it,origDeadline);
+                VMs[Vmid][schedulingDeadline-i-skip].second= job;
+                lastscheduled[it] = schedulingDeadline-i-skip;
+                timeslots[schedulingDeadline-i-skip]++;
                 i++;
             }
         }
@@ -300,24 +305,24 @@ int main()
         cout << endl;
     }
 
-    // cout<<endl<<"scheduling of chunks"<<endl;
-    // for(auto it : F) {
-    //     int chunk_id = it.first;
-    //     cout<<"****************"<<endl;
-    //     cout << "Chunk id: " << chunk_id << endl;
-    //     for(auto it1 : it.second) {
-    //         int machine_id = it1.first;
-    //         cout << "Time slots scheduled in machine: " << machine_id << " before deadline ";
-    //         for(auto it2 : it1.second) {
-    //             int deadline = it2.first;
-    //             int value = it2.second;
-    //             cout << deadline << " is: " << value << endl;
-    //         }
-    //     }
-    // }
+    cout<<endl<<"scheduling of chunks"<<endl;
+    for(auto it : F) {
+        int chunk_id = it.first;
+        cout<<"****************"<<endl;
+        cout << "Chunk id: " << chunk_id << endl;
+        for(auto it1 : it.second) {
+            int machine_id = it1.first;
+            cout << "Time slots scheduled in machine: " << machine_id << " before deadline ";
+            for(auto it2 : it1.second) {
+                int deadline = it2.first;
+                int value = it2.second;
+                cout << deadline << " is: " << value << endl;
+            }
+        }
+    }
     for (const auto& pair : machines_to_chunks) {
         ScheduleVMs(pair.first);
-        cout << endl;
     }
+
 
 }
