@@ -9,6 +9,7 @@ map<int,set<int>>deadline_to_chunks;
 map<int,deque<int>>deadline_chunks;
 set<int>deadlines;
 map<int,map<int,int>>num_slots_sofar; // num[chunk][machine]
+map<int,map<int,vector<pair<int,int>>>>job_chunks; //job[chunks][deadline] = {TS,jobid}
 int B;
 int S;
 int K;   
@@ -23,6 +24,7 @@ static bool compareByTimeSlotsLeft(const int& chunk1, const int& chunk2, const i
     return min(timeSlotsLeft1,d-num_slots_sofar[chunk1][m]) < min(timeSlotsLeft2,d-num_slots_sofar[chunk2][m]);
 }
 
+//Finds the indices for which sum of time slots left is >= S*d for a deadline d
 pair<int,pair<int,int>>find_Hb_indices(deque<int>&q, int B, int S, int d, int m)
 {
     int i=0; int j=0;
@@ -40,6 +42,19 @@ pair<int,pair<int,int>>find_Hb_indices(deque<int>&q, int B, int S, int d, int m)
         }
     }
     return {sum,{i,j}};
+}
+
+// Gets the job index for a chunk for schedule
+int getJob(int chunk_id,int d)
+{
+    int id = -1;
+    if(!job_chunks[chunk_id][d].empty())
+    {
+        id = job_chunks[chunk_id][d].back().second;
+        job_chunks[chunk_id][d].back().first--;
+        if(job_chunks[chunk_id][d].back().first==0) job_chunks[chunk_id][d].pop_back(); // The timeslots are scheduled
+    }
+    return id;
 }
 
 // Pass 1 tells if its scheduling for a new deadline ( check B constraint, add to machines) or we are trying to satisfy remaining deadlines of that job (Optimising)
@@ -99,11 +114,11 @@ void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true)
 
 void ScheduleVMs(int machine_id)
 {
-    cout<<"Proper Schedule in machine : "<<machine_id<<endl;
+    cout<<"Whole Schedule in machine : "<<machine_id<<endl<<endl;
     map<int,int> timeslots;
     map<int,int> lastscheduled;
     auto maxdealine = deadlines.rbegin();
-    vector<vector<int>> VMs (S, vector<int> (*maxdealine,0));
+    vector<vector<pair<int,int>>> VMs (S, vector<pair<int,int>> (*maxdealine,{0,-1})); //Chunk ID, Job ID
     for(auto it:machines_to_chunks[machine_id])
         lastscheduled[it]=*maxdealine;
     for (auto rit = deadlines.rbegin(); rit != deadlines.rend(); rit++) 
@@ -112,7 +127,6 @@ void ScheduleVMs(int machine_id)
         for(auto it:machines_to_chunks[machine_id])
         {
             int slots = F[it][machine_id][d];
-            // cout<<"Chunk    :"<<it<<"   Deadline   :"<<d<<"     Slots :"<<slots<<endl;
             int i =1;
             int skip=0;
             d = min(d,lastscheduled[it]);
@@ -124,25 +138,25 @@ void ScheduleVMs(int machine_id)
                     skip++;
                     continue;
                 }
-                VMs[Vmid][d-i-skip]=it;
+                VMs[Vmid][d-i-skip].first=it;
+                VMs[Vmid][d-i-skip].second=getJob(it,d);
                 lastscheduled[it] = d-i-skip;
                 timeslots[d-i-skip]++;
                 i++;
             }
         }
     }
-    // cout<<"Slots            :   ";
-    // for(int i=0;i<*maxdealine;i++)
-    // {
-    //     cout<<i<<"  ";
-    // }
-    // cout<<endl;
+
     for(int i =0;i<S;i++)
     {
-        cout<<"Scheudle for VM "<<i+1<<" :  ";
+        cout<<"Scheudle for VM "<<i+1<<" : "<<endl;
         for(int j = 0;j<*maxdealine;j++)
         {
-            cout<<"Slot "<<j<<": "<<VMs[i][j]<<"  ";
+            if(VMs[i][j].first!=0)
+            cout<<"Time "<<j<<" - Chunk: "<<VMs[i][j].first<<"  Job: "<<VMs[i][j].second<<endl;
+            else
+            cout<<"Time "<<j<<" - Free"<<endl;
+
         }
         cout<<endl;
     }
@@ -159,11 +173,19 @@ int main()
         int d; cin>>d;
         int nc; cin>>nc;
         deadlines.insert(d);
+        set<int>latest_chunks;
+        map<int,int>latest_chunk_ts;
         for(int i=0; i<nc; i++)
         {
             int chunk_id; cin>>chunk_id;
+            latest_chunks.insert(chunk_id);
             chunk_ts[chunk_id][d]++;
+            latest_chunk_ts[chunk_id]++;
             deadline_to_chunks[d].insert(chunk_id);
+        }
+        for(auto x : latest_chunks)
+        {
+            job_chunks[x][d].push_back({latest_chunk_ts[x],j});
         }
     }
     for(auto x: deadline_to_chunks)
@@ -174,13 +196,13 @@ int main()
         }
     }
 
-    cout << "chunk_ts:" << endl;
-    for (const auto& chunk : chunk_ts) {
-        cout << "Chunk ID: " << chunk.first << endl;
-        for (const auto& deadline : chunk.second) {
-            cout << "  Deadline " << deadline.first << ": " << deadline.second << " time slots needed" << endl;
-        }
-    }
+    // cout << "chunk_ts:" << endl;
+    // for (const auto& chunk : chunk_ts) {
+    //     cout << "Chunk ID: " << chunk.first << endl;
+    //     for (const auto& deadline : chunk.second) {
+    //         cout << "  Deadline " << deadline.first << ": " << deadline.second << " time slots needed" << endl;
+    //     }
+    // }
 
     //Phase 1
     int m = 0; // Starting with 1 machine
@@ -278,21 +300,21 @@ int main()
         cout << endl;
     }
 
-    cout<<endl<<"scheduling of chunks"<<endl;
-    for(auto it : F) {
-        int chunk_id = it.first;
-        cout<<"****************"<<endl;
-        cout << "Chunk id: " << chunk_id << endl;
-        for(auto it1 : it.second) {
-            int machine_id = it1.first;
-            cout << "Time slots scheduled in machine: " << machine_id << " before deadline ";
-            for(auto it2 : it1.second) {
-                int deadline = it2.first;
-                int value = it2.second;
-                cout << deadline << " is: " << value << endl;
-            }
-        }
-    }
+    // cout<<endl<<"scheduling of chunks"<<endl;
+    // for(auto it : F) {
+    //     int chunk_id = it.first;
+    //     cout<<"****************"<<endl;
+    //     cout << "Chunk id: " << chunk_id << endl;
+    //     for(auto it1 : it.second) {
+    //         int machine_id = it1.first;
+    //         cout << "Time slots scheduled in machine: " << machine_id << " before deadline ";
+    //         for(auto it2 : it1.second) {
+    //             int deadline = it2.first;
+    //             int value = it2.second;
+    //             cout << deadline << " is: " << value << endl;
+    //         }
+    //     }
+    // }
     for (const auto& pair : machines_to_chunks) {
         ScheduleVMs(pair.first);
         cout << endl;
