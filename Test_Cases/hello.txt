@@ -1,0 +1,24 @@
+Proper Schedule in machine : 2
+Scheudle for VM 1 :  Slot 0: 0 
+Slot 1: 5 
+Slot 2: 5  
+Slot 3: 5
+Slot 4: 5 
+Slot 5: 11 
+Slot 6: 0  
+Slot 7: 0 
+Slot 8: 0 
+Slot 9: 5 
+Slot 10: 0 
+Slot 11: 5
+Slot 12: 19
+Slot 13: 19
+Slot 14: 13  
+Slot 15: 6
+Slot 16: 6
+Slot 17: 6
+Slot 18: 13
+Scheudle for VM 2 :  Slot 0: 0  Slot 1: 11  Slot 2: 0  Slot 3: 19  Slot 4: 19  Slot 5: 5  Slot 6: 0  Slot 7: 0  Slot 8: 0  Slot 9: 0  Slot 10: 0  Slot 11: 19  Slot 12: 5  Slot 13: 6  Slot 14: 19  Slot 15: 0  Slot 16: 13  Slot 17: 13  Slot 18: 19
+Scheudle for VM 3 :  Slot 0: 0  Slot 1: 0  Slot 2: 0  Slot 3: 14  Slot 4: 4  Slot 5: 13  Slot 6: 0  Slot 7: 0  Slot 8: 0  Slot 9: 0  Slot 10: 0  Slot 11: 0  Slot 12: 6  Slot 13: 13  Slot 14: 4  Slot 15: 0  Slot 16: 14  Slot 17: 4  Slot 18: 4
+Scheudle for VM 4 :  Slot 0: 0  Slot 1: 0  Slot 2: 0  Slot 3: 11  Slot 4: 14  Slot 5: 19  Slot 6: 0  Slot 7: 0  Slot 8: 0  Slot 9: 0  Slot 10: 0  Slot 11: 0  Slot 12: 13  Slot 13: 0  Slot 14: 14  Slot 15: 0  Slot 16: 0  Slot 17: 14  Slot 18: 14
+Scheudle for VM 5 :  Slot 0: 0  Slot 1: 0  Slot 2: 0  Slot 3: 0  Slot 4: 0  Slot 5: 4  Slot 6: 0  Slot 7: 0  Slot 8: 0  Slot 9: 0  Slot 10: 0  Slot 11: 0  Slot 12: 0  Slot 13: 0  Slot 14: 5  Slot 15: 0  Slot 16: 0  Slot 17: 0  Slot 18: 0

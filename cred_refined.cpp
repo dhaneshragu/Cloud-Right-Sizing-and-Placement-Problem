@@ -211,8 +211,10 @@ int main()
             // Special optimisation case to reuse the free chunk slot in previous machine
             while(b>0 && b!=B && S*d-slots_scheduled[m]>0 && v.size()) //Some slot of previous machine is left to be filled
             {
+                cout<<"machine: "<<m<<" "<<b<<endl;
                 machines_scheduled.insert(m);
                 schedule(v,start,end,S,d,m); // Schedule these nodes in that
+                cout<<"machine: "<<m<<" "<<b<<" "<<S*d-slots_scheduled[m]<<" "<<v.size()<<" d: "<<d<<endl;
             }
 
             // this is to check the sum of largest B chunks. If its <=S*d then we can schedule any of B chunks in VMs, otherwise we have to use the Hb indices
