@@ -73,11 +73,11 @@ void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true)
         // Number of slots that can be scheduled for a chunk should be <= d - number of slots scheduled so far in that machine
         if(S*d-min(chunk_ts[q[s]][d],d-num_slots_sofar[q[s]][m])-slots_scheduled[m]>=0)
         {
-        
-            slots_scheduled[m]+=min(chunk_ts[q[s]][d],d-num_slots_sofar[q[s]][m]); // Get the number of slots scheduled for that machine
-            F[q[s]][m][d]+=min(chunk_ts[q[s]][d],d-num_slots_sofar[q[s]][m]); //To get the final schedule
-            chunk_ts[q[s]][d] -= min(chunk_ts[q[s]][d],d-num_slots_sofar[q[s]][m]);  // Decrease the required ts for a chunk
-            num_slots_sofar[q[s]][m]+=min(chunk_ts[q[s]][d],d-num_slots_sofar[q[s]][m]);
+            int t = min(chunk_ts[q[s]][d],d-num_slots_sofar[q[s]][m]);
+            slots_scheduled[m]+=t; // Get the number of slots scheduled for that machine
+            F[q[s]][m][d]+=t; //To get the final schedule
+            chunk_ts[q[s]][d] -=t;  // Decrease the required ts for a chunk
+            num_slots_sofar[q[s]][m]+=t;
             if(pass1) // If its pass 1, we are assigning this chunk new, so decrease b and store it in machine to chunks
             {
                 machines_to_chunks[m].push_back(q[s]);
@@ -94,10 +94,11 @@ void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true)
             
         }
         else{ // When all slots cant be scheduled
-            chunk_ts[q[s]][d]-= min((S*d-slots_scheduled[m]),d-num_slots_sofar[q[s]][m]); // Decrement the time slot required for that chunk
-            F[q[s]][m][d]+=min((S*d-slots_scheduled[m]),d-num_slots_sofar[q[s]][m]); // Get the information of how many slots scheduled where for this chunk
-            slots_scheduled[m] += min((S*d-slots_scheduled[m]),d-num_slots_sofar[q[s]][m]); //number of slots scheduled in that machine
-            num_slots_sofar[q[s]][m]+=min((S*d-slots_scheduled[m]),d-num_slots_sofar[q[s]][m]);
+            int t = min((S*d-slots_scheduled[m]),d-num_slots_sofar[q[s]][m]);
+            chunk_ts[q[s]][d]-= t; // Decrement the time slot required for that chunk
+            F[q[s]][m][d]+=t; // Get the information of how many slots scheduled where for this chunk
+            slots_scheduled[m] += t; //number of slots scheduled in that machine
+            num_slots_sofar[q[s]][m]+=t;
             if(pass1)
             {
                 machines_to_chunks[m].push_back(q[s]);
