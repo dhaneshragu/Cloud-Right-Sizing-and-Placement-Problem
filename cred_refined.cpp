@@ -206,7 +206,7 @@ void ScheduleVMs(int machine_id)
             int schedulingDeadline = min(d,lastscheduled[it.second]);
             while(i<=slots)
             {
-                if(schedulingDeadline-i-skip<0){i++; continue;}
+                // if(schedulingDeadline-i-skip<0){i++; continue;}
                 int Vmid = timeslots[schedulingDeadline-i-skip];
                 if(Vmid>=S)
                 {
