@@ -30,13 +30,13 @@ pair<int,pair<int,int>>find_Hb_indices(deque<int>&q, int B, int S, int d)
     while(j<q.size())
     {
         if(j-i+1<B){
-            sum+=min(chunk_ts[q[j]][d],d);
+            sum+=min(chunk_ts[q[j]][d],d-num_slots_sofar[q[j]][m]);
             j++;
         }
         else{
-            sum+=min(chunk_ts[q[j]][d],d);
+            sum+=min(chunk_ts[q[j]][d],d-num_slots_sofar[q[j]][m]);
             if(sum>=S*d) return {sum,{i,j}};
-            sum-=min(chunk_ts[q[i]][d],d); i++; j++;
+            sum-=min(chunk_ts[q[i]][d],d-num_slots_sofar[q[j]][m]); i++; j++;
         }
     }
     return {sum,{i,j}};

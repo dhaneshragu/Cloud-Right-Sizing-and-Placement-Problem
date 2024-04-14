@@ -8,4 +8,4 @@ To run the python program for LPP solution using `Gurobipy` library
 
 ## Polynomial Algorithm solution
 To run the program for this,
-1. ```g++ cred.cpp && a.exe < <path to testcase txt file>```
+1. ```g++ cred_refined.cpp && a.exe < <path to testcase txt file>```
