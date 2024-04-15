@@ -131,22 +131,26 @@ void scheduleVMs2(int machine_id)
         prevd = *prev;
         cout<<d<<" "<<prevd<<endl;
         int i =0,Scount=0;
+        vector<pair<int,int>> vc;
         for(auto it:machines_to_chunks[machine_id])
+            vc.push_back({F[it][machine_id][d],it});
+        sort(vc.begin(),vc.end(),greater<pair<int,int>>());
+        for(auto it:vc)
         {
-            int slots = F[it][machine_id][d];
+            int slots = F[it.second][machine_id][d];
             if(slots>d-prevd)
             {
-                F[it][machine_id][prevd]+=slots-d-prevd;
+                F[it.second][machine_id][prevd]+=slots-d-prevd;
                 slots = d-prevd;
             }
             while (slots>0)
             {
                 if(Scount>=S)
                 {
-                    F[it][machine_id][prevd]+=slots;
+                    F[it.second][machine_id][prevd]+=slots;
                     break;
                 }
-                VMs[Scount][prevd+i]= it;
+                VMs[Scount][prevd+i]= it.second;
                 i++;
                 if(i>=d-prevd)
                 {
@@ -172,6 +176,9 @@ void scheduleVMs2(int machine_id)
         }
         cout<<endl;
     }
+    for(auto it:machines_to_chunks[machine_id])
+        if(F[it][machine_id][0])
+            cout<<"Chunk left: "<<it<<endl;
 }
 void ScheduleVMs(int machine_id)
 {
