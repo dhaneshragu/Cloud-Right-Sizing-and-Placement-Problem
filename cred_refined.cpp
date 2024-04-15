@@ -3,7 +3,7 @@ using namespace std;
 
 map<int,map<int,int>>chunk_ts;
 map<int,int>slots_scheduled;
-map<int,vector<int>>machines_to_chunks;
+map<int,set<int>>machines_to_chunks;
 map<int,map<int,map<int,int>>>F; //F(c,n,i)
 map<int,set<int>>deadline_to_chunks;
 map<int,deque<int>>deadline_chunks;
@@ -65,23 +65,21 @@ void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true)
     sort(q.begin()+s, q.begin()+e, [&](const int& chunk1, const int& chunk2) {
             return compareByTimeSlotsLeft(chunk1, chunk2, d,m);
     });
-
     // If pass1, then check for b constraint, otherwise no
-    while(s<=e && q.size() && (pass1 ? b>0 : true))
+    while(s<=e && q.size() && (pass1 ? machines_to_chunks[m].size()<B : true))
     {
         // Minimum is taken to ensure that no two VMs can access the same chunk in a given time slot
         // Number of slots that can be scheduled for a chunk should be <= d - number of slots scheduled so far in that machine
-        if(S*d-min(chunk_ts[q[s]][d],d-num_slots_sofar[q[s]][m])-slots_scheduled[m]>=0)
+        if(S*d-min(chunk_ts[q[s]][d],max(d-(num_slots_sofar[q[s]][m]+1),1))-slots_scheduled[m]>=0)
         {
-            int t = min(chunk_ts[q[s]][d],d-num_slots_sofar[q[s]][m]);
+            int t = min(chunk_ts[q[s]][d],max(d-(num_slots_sofar[q[s]][m]+1),1));
             slots_scheduled[m]+=t; // Get the number of slots scheduled for that machine
             F[q[s]][m][d]+=t; //To get the final schedule
             chunk_ts[q[s]][d] -=t;  // Decrease the required ts for a chunk
             num_slots_sofar[q[s]][m]+=t;
             if(pass1) // If its pass 1, we are assigning this chunk new, so decrease b and store it in machine to chunks
             {
-                machines_to_chunks[m].push_back(q[s]);
-                b--;
+                machines_to_chunks[m].insert(q[s]);
             }
             if(chunk_ts[q[s]][d]==0) // If all the timeslots are over(normal case)
             {
@@ -91,25 +89,32 @@ void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true)
             else{ // For the special case, when min(,d) is considered, move to next one
                 s++;
             }
+            if(slots_scheduled[m]==S*d)
+            {
+                for(auto chk: machines_to_chunks[m])
+                {
+                    num_slots_sofar[chk][m] = max(d,num_slots_sofar[chk][m]);
+                }
+                break;
+            }
             
         }
         else{ // When all slots cant be scheduled
-            int t = min((S*d-slots_scheduled[m]),d-num_slots_sofar[q[s]][m]);
+            int t = S*d-slots_scheduled[m];
             chunk_ts[q[s]][d]-= t; // Decrement the time slot required for that chunk
             F[q[s]][m][d]+=t; // Get the information of how many slots scheduled where for this chunk
             slots_scheduled[m] += t; //number of slots scheduled in that machine
             num_slots_sofar[q[s]][m]+=t;
             if(pass1)
             {
-                machines_to_chunks[m].push_back(q[s]);
-                b--;
+                machines_to_chunks[m].insert(q[s]);
             }
             // When all slots are scheduled set the number of slots scheduled so far for that node to be equal to d, so that no two VMs can access same chunk in same timeslot in future (kind of way of telling that all slots for that particular VM is filled), otherwise try to schedule the next node
             if(slots_scheduled[m]==S*d)
             {
                 for(auto chk: machines_to_chunks[m])
                 {
-                    num_slots_sofar[chk][m] = d;
+                    num_slots_sofar[chk][m] = max(d,num_slots_sofar[chk][m]);
                 }
                 break;
             }
@@ -199,14 +204,14 @@ double scheduleVMs2(int machine_id)
         cout<<endl;
     }
 
-    // //Assert to check that all chunks are assigned
-    // for (auto it : machines_to_chunks[machine_id]) {
-    //     if (F[it][machine_id][0]) 
-    //     {
-    //         cout << "Chunk left: " << it << endl;
-    //     }
-    //     assert(F[it][machine_id][0] == 0 && "Chunks are not assigned");
-    // }
+    //Assert to check that all chunks are assigned
+    for (auto it : machines_to_chunks[machine_id]) {
+        if (F[it][machine_id][0]) 
+        {
+            cout << "Chunk left: " << it << endl;
+        }
+        assert(F[it][machine_id][0] == 0 && "Chunks are not assigned");
+    }
     cout<<"Machine utilisation :    "<<(double)utilisation/Total<<endl<<endl;
     return (double)utilisation/Total;
 }
@@ -294,10 +299,13 @@ int main()
             int end = idx.second.second;
 
             // Special optimisation case to reuse the free chunk slot in previous machine
-            while(b>0 && b!=B && S*d-slots_scheduled[m]>0 && v.size()) //Some slot of previous machine is left to be filled
+            int b_prev = (m>0) ? machines_to_chunks[m].size() : 0;
+            while(m > 0 && machines_to_chunks[m].size()>0 && machines_to_chunks[m].size()<B && S*d-slots_scheduled[m]>0 && v.size()) //Some slot of previous machine is left to be filled
             {
                 machines_scheduled.insert(m);
                 schedule(v,start,end,S,d,m); // Schedule these nodes in that
+                if(machines_to_chunks[m].size()==b_prev) break;
+                b_prev = machines_to_chunks[m].size();
             }
 
             // this is to check the sum of largest B chunks. If its <=S*d then we can schedule any of B chunks in VMs, otherwise we have to use the Hb indices
