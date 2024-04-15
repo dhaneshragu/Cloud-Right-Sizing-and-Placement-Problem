@@ -84,7 +84,7 @@ int main()
     m = 1; // Start with 1 machines
     vector<Node*>v; // Store the machines scheduled
 
-    //First fit algo: Go to every job and try to schedule the chunks as it is if possible in the previous machines, if not, make a new machine and try to schedule in that
+    //Best fit algo: Go to every job and try to schedule the chunks as it is if possible even partially if possible in the previous machines, if not, make a new machine and try to schedule in that
 
     for(auto x : jobs_to_chunks)
     {
