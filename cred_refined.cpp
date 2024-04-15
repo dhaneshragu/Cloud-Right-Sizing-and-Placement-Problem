@@ -120,7 +120,7 @@ void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true)
 
 }
 
-void scheduleVMs2(int machine_id)
+double scheduleVMs2(int machine_id)
 {
     cout<<"Schedule in machine : "<<machine_id<<endl<<endl;
     map<int,int> timeslots;
@@ -181,13 +181,17 @@ void scheduleVMs2(int machine_id)
     }
 
     int startingDeadline = 0;
+    long long int Total = S*(*maxdealine),utilisation = 0;
     for(int i =0;i<S;i++)
     {
         cout<<"Scheudle for VM "<<i+1<<" : "<<endl;
         for(int j = 0;j<*maxdealine;j++)
         {
             if(VMs[i][j]!=0)
-            cout<<"Time "<<j<<" - Chunk: "<<VMs[i][j]<<" Job: "<<getJob(VMs[i][j])<<endl;
+            {
+                cout<<"Time "<<j<<" - Chunk: "<<VMs[i][j]<<" Job: "<<getJob(VMs[i][j])<<endl;
+                utilisation++;
+            }
             else
             cout<<"Time "<<j<<" - Free"<<endl;
 
@@ -203,6 +207,8 @@ void scheduleVMs2(int machine_id)
     //     }
     //     assert(F[it][machine_id][0] == 0 && "Chunks are not assigned");
     // }
+    cout<<"Machine utilisation :    "<<(double)utilisation/Total<<endl<<endl;
+    return (double)utilisation/Total;
 }
 
 
@@ -372,9 +378,15 @@ int main()
             }
         }
     }
-    for (const auto& pair : machines_to_chunks) {
-        scheduleVMs2(pair.first);
+    double utilisation =0;
+    int c =0;
+    for (const auto& pair : machines_to_chunks) 
+    {
+        utilisation+= scheduleVMs2(pair.first);
+        c++;
     }
-
-
+    if(c)
+    {
+        cout<<"Average Machine Utilisation :    "<<utilisation/c<<endl;
+    }
 }
