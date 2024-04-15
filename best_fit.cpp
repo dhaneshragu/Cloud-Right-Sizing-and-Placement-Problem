@@ -6,14 +6,6 @@ int S;
 int K;   
 int m = 1;
 
-// 1
-// 3
-// 2
-// 1 25 2
-// 2 2
-// 2 1 4
-// 2 2 1 2
-
 map<int,map<int,int>>jobs_to_chunks; //Stores chunks and their deadlines for each job
 struct Node
 {
@@ -104,8 +96,6 @@ int main()
             while(y.second) // Till all are scheduled
             {
                 //Phase 1 see its previous machines
-                int min_slots = INT_MAX;
-                Node* best_fit_machine = nullptr;
                 for(int i=0; i<v.size() && phase1; i++)
                 {
                     int d = deadlines[job]-1;
@@ -113,7 +103,7 @@ int main()
                     if((v[i]->chunks_scheduled.find(chunk)!=v[i]->chunks_scheduled.end()) || (v[i]->chunks_scheduled.size() < B))
                     {
                         // Basic schedulability check
-                        if(S*(d+1)-v[i]->slots_scheduled-y.second>=0)
+                        if(S*(d+1)-v[i]->slots_scheduled>0)
                         {
                             while(d>=0 && y.second)
                             {
@@ -123,7 +113,6 @@ int main()
                                 } 
                                 d--;  // Go to previous timestamp as well as decrement TS left for a job
                             }
-    
                         }
                     }
                 }
@@ -146,7 +135,8 @@ int main()
             }
         }
     }
-    //Print final schedule by calling the member function
+
+    // Print final schedule by calling the member function
     cout<<endl;
     for(auto x : v)
     {
