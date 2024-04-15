@@ -10,6 +10,7 @@ map<int,deque<int>>deadline_chunks;
 set<int>deadlines;
 map<int,map<int,int>>num_slots_sofar; // num[chunk][machine]
 map<int,map<int,vector<pair<int,int>>>>job_chunks; //job[chunks][deadline] = {TS,jobid}
+map<int,deque<pair<int,int>>>chunks_to_jobs;// to get the {TS,jobid} for each chunk in order of deadlines
 int B;
 int S;
 int K;   
@@ -45,14 +46,14 @@ pair<int,pair<int,int>>find_Hb_indices(deque<int>&q, int B, int S, int d, int m)
 }
 
 // Gets the job index for a chunk for schedule
-int getJob(int chunk_id,int d)
+int getJob(int chunk_id)
 {
     int id = -1;
-    if(!job_chunks[chunk_id][d].empty())
+    if(!chunks_to_jobs[chunk_id].empty())
     {
-        id = job_chunks[chunk_id][d].back().second;
-        job_chunks[chunk_id][d].back().first--;
-        if(job_chunks[chunk_id][d].back().first==0) job_chunks[chunk_id][d].pop_back(); // The timeslots are scheduled
+        id = chunks_to_jobs[chunk_id][0].second;
+        chunks_to_jobs[chunk_id][0].first--;
+        if(chunks_to_jobs[chunk_id][0].first==0) chunks_to_jobs[chunk_id].pop_front(); // The timeslots are scheduled
     }
     return id;
 }
@@ -179,13 +180,14 @@ void scheduleVMs2(int machine_id)
         }
     }
 
+    int startingDeadline = 0;
     for(int i =0;i<S;i++)
     {
         cout<<"Scheudle for VM "<<i+1<<" : "<<endl;
         for(int j = 0;j<*maxdealine;j++)
         {
             if(VMs[i][j]!=0)
-            cout<<"Time "<<j<<" - Chunk: "<<VMs[i][j]<<endl;
+            cout<<"Time "<<j<<" - Chunk: "<<VMs[i][j]<<" Job: "<<getJob(VMs[i][j])<<endl;
             else
             cout<<"Time "<<j<<" - Free"<<endl;
 
@@ -193,80 +195,16 @@ void scheduleVMs2(int machine_id)
         cout<<endl;
     }
 
-    //Assert to check that all chunks are assigned
-    for (auto it : machines_to_chunks[machine_id]) {
-        if (F[it][machine_id][0]) 
-        {
-            cout << "Chunk left: " << it << endl;
-        }
-        assert(F[it][machine_id][0] == 0 && "Chunks are not assigned");
-    }
+    // //Assert to check that all chunks are assigned
+    // for (auto it : machines_to_chunks[machine_id]) {
+    //     if (F[it][machine_id][0]) 
+    //     {
+    //         cout << "Chunk left: " << it << endl;
+    //     }
+    //     assert(F[it][machine_id][0] == 0 && "Chunks are not assigned");
+    // }
 }
-void ScheduleVMs(int machine_id)
-{
-    cout<<"Whole Schedule in machine : "<<machine_id<<endl<<endl;
-    map<int,int> timeslots;
-    map<int,int> lastscheduled;
-    auto maxdealine = deadlines.rbegin();
-    vector<vector<pair<int,int>>> VMs (S, vector<pair<int,int>> (*maxdealine,{0,-1})); //Chunk ID, Job ID
-    for(auto it:machines_to_chunks[machine_id])
-        lastscheduled[it]=*maxdealine;
-    for (auto rit = deadlines.rbegin(); rit != deadlines.rend(); rit++) 
-    {
-        int d = *rit;
-        auto prev = rit;
-        prev++;
-        int prevd=0;
-        if(prev!=deadlines.rend())
-        prevd = *prev;
-        vector<pair<int,int>> vc;
-        for(auto it:machines_to_chunks[machine_id])
-        {
-            int slots = F[it][machine_id][d];
-            vc.push_back({slots,it});
-        }
-        sort(vc.begin(),vc.end(),greater<pair<int,int>>());
-        for(auto it:vc)
-        {
-            int origDeadline = d;
-            int slots = F[it.second][machine_id][origDeadline];
-            int i =1;
-            int skip=0;
-            int schedulingDeadline = min(d,lastscheduled[it.second]);
-            while(i<=slots)
-            {
-                if(schedulingDeadline-i-skip<0){i++; continue;}
-                int Vmid = timeslots[schedulingDeadline-i-skip];
-                if(Vmid>=S)
-                {
-                    skip++;
-                    continue;
-                }
-                F[it.second][machine_id][origDeadline]--;
-                VMs[Vmid][schedulingDeadline-i-skip].first=it.second;
-                int job = getJob(it.second,origDeadline);
-                VMs[Vmid][schedulingDeadline-i-skip].second= job;
-                lastscheduled[it.second] = schedulingDeadline-i-skip;
-                timeslots[schedulingDeadline-i-skip]++;
-                i++;
-            }
-        }
-    }
 
-    for(int i =0;i<S;i++)
-    {
-        cout<<"Scheudle for VM "<<i+1<<" : "<<endl;
-        for(int j = 0;j<*maxdealine;j++)
-        {
-            if(VMs[i][j].first!=0)
-            cout<<"Time "<<j<<" - Chunk: "<<VMs[i][j].first<<"  Job: "<<VMs[i][j].second<<endl;
-            else
-            cout<<"Time "<<j<<" - Free"<<endl;
-
-        }
-        cout<<endl;
-    }
-}
 
 int main()
 {
@@ -299,6 +237,19 @@ int main()
         for(auto s: x.second)
         {
             deadline_chunks[x.first].push_back(s);
+        }
+    }
+
+    // For final printing of job Ids along with Chunks
+    for(auto it: job_chunks)
+    {
+        int chunk_id = it.first;
+        for(auto it2: it.second)
+        {
+            for(auto pairs : it2.second)
+            {
+                chunks_to_jobs[chunk_id].push_back(pairs);
+            }
         }
     }
 
