@@ -10,7 +10,6 @@ map<int,deque<int>>deadline_chunks;
 set<int>deadlines;
 map<int,map<int,int>>num_slots_sofar; // num[chunk][machine]
 map<int,map<int,vector<pair<int,int>>>>job_chunks; //job[chunks][deadline] = {TS,jobid}
-map<int,map<int,set<int>>>machine_free;// machine[m][TS]
 int B;
 int S;
 int K;   
@@ -104,9 +103,15 @@ void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true)
                 machines_to_chunks[m].push_back(q[s]);
                 b--;
             }
-            // When all slots are scheduled, break, otherwise try to schedule the next node
+            // When all slots are scheduled set the number of slots scheduled so far for that node to be equal to d, so that no two VMs can access same chunk in same timeslot in future (kind of way of telling that all slots for that particular VM is filled), otherwise try to schedule the next node
             if(slots_scheduled[m]==S*d)
-            break;
+            {
+                for(auto chk: machines_to_chunks[m])
+                {
+                    num_slots_sofar[chk][m] = d;
+                }
+                break;
+            }
             else
             s++;
         }
@@ -116,7 +121,7 @@ void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true)
 
 void scheduleVMs2(int machine_id)
 {
-    cout<<"Whole Schedule in machine : "<<machine_id<<endl<<endl;
+    cout<<"Schedule in machine : "<<machine_id<<endl<<endl;
     map<int,int> timeslots;
     map<int,int> lastscheduled;
     auto maxdealine = deadlines.rbegin();
@@ -124,40 +129,51 @@ void scheduleVMs2(int machine_id)
     for (auto rit = deadlines.rbegin(); rit != deadlines.rend(); rit++) 
     {
         int d = *rit;
+        // Get the previous deadline
         auto prev = rit;
         prev++;
         int prevd=0;
         if(prev!=deadlines.rend())
         prevd = *prev;
 
+        // i tells the relative displacement from the previous deadline where current job is scheduled to
+        //Scount tells the VM Id that is used to schedule a job
         int i =0,Scount=0;
-        vector<pair<int,int>> vc;
+        
+        // To sort the chunks based on time slots left
+        vector<pair<int,int>> vc; 
         for(auto it:machines_to_chunks[machine_id])
             vc.push_back({F[it][machine_id][d],it});
+
         sort(vc.begin(),vc.end(),greater<pair<int,int>>());
+
         for(auto it:vc)
         {
+            //Get the number of slots required for this chunk
             int slots = F[it.second][machine_id][d];
+            // If there are more slots than what cis required, shift to previous deadline
             if(slots>d-prevd)
             {
-                F[it.second][machine_id][prevd]+=slots-d-prevd;
+                F[it.second][machine_id][prevd]+=slots-d+prevd;
                 slots = d-prevd;
             }
             while (slots>0)
             {
+                //When all VMs are busy we cant schedule anymore
                 if(Scount>=S)
                 {
                     F[it.second][machine_id][prevd]+=slots;
                     break;
                 }
                 VMs[Scount][prevd+i]= it.second;
-                i++;
+                i++; // Increase the displacement
+                // I have reached the end of the time frame, now loop back
                 if(i>=d-prevd)
                 {
                     i=0;
                     Scount++;
                 }
-                slots--;
+                slots--; //decrement the slots
             }
             
         }
@@ -176,9 +192,15 @@ void scheduleVMs2(int machine_id)
         }
         cout<<endl;
     }
-    for(auto it:machines_to_chunks[machine_id])
-        if(F[it][machine_id][0])
-            cout<<"Chunk left: "<<it<<endl;
+
+    //Assert to check that all chunks are assigned
+    for (auto it : machines_to_chunks[machine_id]) {
+        if (F[it][machine_id][0]) 
+        {
+            cout << "Chunk left: " << it << endl;
+        }
+        assert(F[it][machine_id][0] == 0 && "Chunks are not assigned");
+    }
 }
 void ScheduleVMs(int machine_id)
 {
