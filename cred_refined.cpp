@@ -129,7 +129,7 @@ void scheduleVMs2(int machine_id)
         int prevd=0;
         if(prev!=deadlines.rend())
         prevd = *prev;
-        cout<<d<<" "<<prevd<<endl;
+
         int i =0,Scount=0;
         vector<pair<int,int>> vc;
         for(auto it:machines_to_chunks[machine_id])
@@ -213,7 +213,7 @@ void ScheduleVMs(int machine_id)
             int schedulingDeadline = min(d,lastscheduled[it.second]);
             while(i<=slots)
             {
-                cout<<"SchedulingDeadline-i-skip: "<<schedulingDeadline-i-skip<<endl;
+                if(schedulingDeadline-i-skip<0){i++; continue;}
                 int Vmid = timeslots[schedulingDeadline-i-skip];
                 if(Vmid>=S)
                 {
