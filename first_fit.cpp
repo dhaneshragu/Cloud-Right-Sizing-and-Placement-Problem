@@ -146,6 +146,15 @@ int main()
             }
         }
     }
+    // Print machines to chunks
+    cout<<"machine_to_chunks: "<<endl;
+    for(auto x: v)
+    {
+        cout<<"Machine "<<x->mid<<": ";
+        for(auto y: x->chunks_scheduled) cout<<y<<" ";
+        cout<<endl;
+    }
+
     //Print final schedule by calling the member function
     cout<<endl;
     for(auto x : v)
