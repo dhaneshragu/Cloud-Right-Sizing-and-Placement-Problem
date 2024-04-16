@@ -141,7 +141,7 @@ void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true, 
 
 }
 
-double scheduleVMs2(int machine_id)
+double scheduleVMs(int machine_id)
 {
     cout<<"Schedule in machine : "<<machine_id<<endl<<endl;
     map<int,int> timeslots;
@@ -419,7 +419,7 @@ int main()
     int c =0;
     for (const auto& pair : machines_to_chunks) 
     {
-        utilisation+= scheduleVMs2(pair.first);
+        utilisation+= scheduleVMs(pair.first);
         c++;
     }
     if(c)
