@@ -60,8 +60,10 @@ int getJob(int chunk_id)
 }
 
 // Pass 1 tells if its scheduling for a new deadline ( check B constraint, add to machines) or we are trying to satisfy remaining deadlines of that job (Optimising)
-void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true, int prevd = 0)
+// Returns true when some thing is scheduled and some progress is made
+bool schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true, int prevd = 0)
 {
+    int progress = false;
     e = min<int>(e,q.size()-1); // sort from s to e. This is an edge case for when e is very large than size of queue
     sort(q.begin()+s, q.begin()+e, [&](const int& chunk1, const int& chunk2) {
             return compareByTimeSlotsLeft(chunk1, chunk2, d,m);
@@ -73,71 +75,85 @@ void schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true, 
         // Number of slots that can be scheduled for a chunk should be <= d - number of slots scheduled so far in that machine
         num_slots_sofar[q[s]][m]= max(num_slots_sofar[q[s]][m], last_filled_deadline[m]);
         int t = min(chunk_ts[q[s]][d],d-num_slots_sofar[q[s]][m]);
-        if(t==0){s++; continue;}
-        if(S*d-t-slots_scheduled[m]>=0)
+        if(chunk_ts[q[s]][d]==0)
         {
-            slots_scheduled[m]+=t; // Get the number of slots scheduled for that machine
-            F[q[s]][m][d]+=t; //To get the final schedule
-            cnt_per_deadline[m][d]+=t;
-            chunk_ts[q[s]][d] -=t;  // Decrease the required ts for a chunk
-            num_slots_sofar[q[s]][m]+=t;
-            // This means its trying to schedule in previous deadline quota
-            if(t > d-prevd)
+            break;
+        }
+        else if(t==0) // If chunks are having 0 time slot
+        { 
+            s++; 
+        }
+        else
+        {
+            if(S*d-t-slots_scheduled[m]>=0)
             {
-                cnt_per_deadline[m][prevd]+=(t-d+prevd);
-                // Last deadline got filled
-                last_filled_deadline[m] = max(cnt_per_deadline[m][prevd]/S,last_filled_deadline[m]);
-            }
+                slots_scheduled[m]+=t; // Get the number of slots scheduled for that machine
+                F[q[s]][m][d]+=t; //To get the final schedule
+                cnt_per_deadline[m][d]+=t;
+                chunk_ts[q[s]][d] -=t;  // Decrease the required ts for a chunk
+                num_slots_sofar[q[s]][m]+=t;
+                progress = true;
+                // This means its trying to schedule in previous deadline quota
+                if(t > d-prevd)
+                {
+                    cnt_per_deadline[m][prevd]+=(t-d+prevd);
+                    // Last deadline got filled
+                    last_filled_deadline[m] = max(cnt_per_deadline[m][prevd]/S,last_filled_deadline[m]);
+                }
 
-            if(pass1) // If its pass 1, we are assigning this chunk new, so decrease b and store it in machine to chunks
-            {
-                machines_to_chunks[m].insert(q[s]);
+                if(pass1) // If its pass 1, we are assigning this chunk new, so decrease b and store it in machine to chunks
+                {
+                    machines_to_chunks[m].insert(q[s]);
+                }
+                if(chunk_ts[q[s]][d]==0) // If all the timeslots are over(normal case)
+                {
+                    q.erase(q.begin()+s);
+                    e--;
+                }
+                else{ // For the special case, when min(,d) is considered, move to next one
+                    s++;
+                }
+        
+                if(slots_scheduled[m]==S*d)
+                {
+                    last_filled_deadline[m] = d;
+                    break;
+                }
+                
             }
-            if(chunk_ts[q[s]][d]==0) // If all the timeslots are over(normal case)
-            {
-                q.erase(q.begin()+s);
-                e--;
-            }
-            else{ // For the special case, when min(,d) is considered, move to next one
+            else{ // When all slots cant be scheduled
+                int t = S*d-slots_scheduled[m];
+                chunk_ts[q[s]][d]-= t; // Decrement the time slot required for that chunk
+                F[q[s]][m][d]+=t; // Get the information of how many slots scheduled where for this chunk
+                cnt_per_deadline[m][d]+=t;
+                slots_scheduled[m] += t; //number of slots scheduled in that machine
+                num_slots_sofar[q[s]][m]+=t;
+                progress = true;
+                if(pass1)
+                {
+                    machines_to_chunks[m].insert(q[s]);
+                }
+                // This means its trying to schedule in previous deadline quota
+                if(t > d-prevd)
+                {
+                    cnt_per_deadline[m][prevd]+=(t-d+prevd);
+                    // Last deadline got filled
+                    last_filled_deadline[m] = max(cnt_per_deadline[m][prevd]/S,last_filled_deadline[m]);
+                }
+                // When all slots are scheduled set the number of slots scheduled so far for that node to be equal to d, so that no two VMs can access same chunk in same timeslot in future (kind of way of telling that all slots for that particular VM is filled), otherwise try to schedule the next node
+                if(slots_scheduled[m]==S*d)
+                {
+                    last_filled_deadline[m] = d;
+                    break;
+                }
+                else
                 s++;
             }
-    
-            if(slots_scheduled[m]==S*d)
-            {
-                last_filled_deadline[m] = d;
-                break;
-            }
-            
         }
-        else{ // When all slots cant be scheduled
-            int t = S*d-slots_scheduled[m];
-            chunk_ts[q[s]][d]-= t; // Decrement the time slot required for that chunk
-            F[q[s]][m][d]+=t; // Get the information of how many slots scheduled where for this chunk
-            cnt_per_deadline[m][d]+=t;
-            slots_scheduled[m] += t; //number of slots scheduled in that machine
-            num_slots_sofar[q[s]][m]+=t;
-            if(pass1)
-            {
-                machines_to_chunks[m].insert(q[s]);
-            }
-            // This means its trying to schedule in previous deadline quota
-            if(m==5)
-            if(t > d-prevd)
-            {
-                cnt_per_deadline[m][prevd]+=(t-d+prevd);
-                // Last deadline got filled
-                last_filled_deadline[m] = max(cnt_per_deadline[m][prevd]/S,last_filled_deadline[m]);
-            }
-            // When all slots are scheduled set the number of slots scheduled so far for that node to be equal to d, so that no two VMs can access same chunk in same timeslot in future (kind of way of telling that all slots for that particular VM is filled), otherwise try to schedule the next node
-            if(slots_scheduled[m]==S*d)
-            {
-                last_filled_deadline[m] = d;
-                break;
-            }
-            else
-            s++;
-        }
+        
     }
+
+    return progress;
 
 }
 
@@ -323,10 +339,10 @@ int main()
             int b_prev = (m>0) ? machines_to_chunks[m].size() : 0;
             while(m > 0 && machines_to_chunks[m].size()>0 && machines_to_chunks[m].size()<B && S*d-slots_scheduled[m]>0 && v.size()) //Some slot of previous machine is left to be filled
             {
-                machines_scheduled.insert(m);
                 schedule(v,start,end,S,d,m,true,prev_d); // Schedule these nodes in that
                 if(machines_to_chunks[m].size()==b_prev) break;
                 b_prev = machines_to_chunks[m].size();
+                machines_scheduled.insert(m);
             }
 
             // this is to check the sum of largest B chunks. If its <=S*d then we can schedule any of B chunks in VMs, otherwise we have to use the Hb indices
@@ -351,8 +367,14 @@ int main()
         while(!v.empty())
         {
             m++; //Create a new Machine
-            machines_scheduled.insert(m);
-            schedule(v,0,B-1,S,d,m,true,prev_d);
+            bool progress = schedule(v,0,B-1,S,d,m,true,prev_d);
+            if(!progress) {
+                m--;
+                break;
+            }
+            else{
+                machines_scheduled.insert(m);
+            }
         }
 
         cnt_per_deadline[m][d] = slots_scheduled[m];
