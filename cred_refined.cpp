@@ -69,7 +69,7 @@ bool schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true, 
             return compareByTimeSlotsLeft(chunk1, chunk2, d,m);
     });
     // If pass1, then check for b constraint, otherwise no
-    while(s<=e && q.size() && (pass1 ? machines_to_chunks[m].size()<B : true))
+    while(s<=e && q.size() && (pass1 ? (machines_to_chunks.count(m) ? machines_to_chunks[m].size() : 0)<B : true))
     {
         // Minimum is taken to ensure that no two VMs can access the same chunk in a given time slot
         // Number of slots that can be scheduled for a chunk should be <= d - number of slots scheduled so far in that machine
@@ -336,12 +336,12 @@ int main()
             int end = idx.second.second;
 
             // Special optimisation case to reuse the free chunk slot in previous machine
-            int b_prev = (m>0) ? machines_to_chunks[m].size() : 0;
-            while(m > 0 && machines_to_chunks[m].size()>0 && machines_to_chunks[m].size()<B && S*d-slots_scheduled[m]>0 && v.size()) //Some slot of previous machine is left to be filled
+            int b_prev = (m>0) ? (machines_to_chunks.count(m) ? machines_to_chunks[m].size() : 0) : 0;
+            while(m > 0 && (machines_to_chunks.count(m) ? machines_to_chunks[m].size() : 0)>0 && (machines_to_chunks.count(m) ? machines_to_chunks[m].size() : 0)<B && S*d-slots_scheduled[m]>0 && v.size()) //Some slot of previous machine is left to be filled
             {
                 schedule(v,start,end,S,d,m,true,prev_d); // Schedule these nodes in that
-                if(machines_to_chunks[m].size()==b_prev) break;
-                b_prev = machines_to_chunks[m].size();
+                if((machines_to_chunks.count(m) ? machines_to_chunks[m].size() : 0)==b_prev) break;
+                b_prev = (machines_to_chunks.count(m) ? machines_to_chunks[m].size() : 0);
                 machines_scheduled.insert(m);
             }
 
