@@ -2,6 +2,7 @@ import gurobipy as gp
 from gurobipy import GRB
 from collections import defaultdict
 import sys
+import csv
 
 # Check if the correct number of arguments are provided
 if len(sys.argv) != 2:
@@ -21,6 +22,7 @@ F = {}
 N = 0
 B = 0
 S = 0
+tot_jobs = 0
 
 try:
     # Open the file in read mode
@@ -97,16 +99,12 @@ for machines in range(1,N+1):
 
 model.setObjective(objective,GRB.MINIMIZE)
 model.optimize()
-#model.write("h.lp")
 
 # Post Processing
 active_machines = [] # For getting list of active machines
 machine_to_chunks = defaultdict(list)
 
 if model.status == GRB.OPTIMAL:
-    # Print the objective value
-    print('Number of active Nodes:', model.objVal)
-
     # Get the active nodes
     for machines in range(1, N + 1):
         if active_node[machines].x == 1:
@@ -115,7 +113,6 @@ if model.status == GRB.OPTIMAL:
     # Get the machines assigned in each chunks
     for chunk, machines in placement_vars:
         if placement_vars[(chunk, machines)].x == 1:
-            #print(f'Chunk {chunk} assigned to machine {machines}')
             machine_to_chunks[machines].append(chunk)
 
     # Print the chunks in each machines
@@ -125,6 +122,15 @@ if model.status == GRB.OPTIMAL:
     # Get the number of assigned slots
     for chunk, machines, deadline in F:
         if F[(chunk, machines, deadline)].x > 0:
-            print(f'Timeslots for chunk {chunk} in machine {machines} before deadline {deadline}: {F[(chunk, machines, deadline)].x}')
+            print(f'Timeslots for chunk {chunk} in machine {machines} till deadline {deadline}: {F[(chunk, machines, deadline)].x}')
+
+    # Calculate the total number of variables
+    total_variables = variable_cnt
+
+    # # Write to CSV file
+    # with open('variable_counts.csv', mode='a', newline='') as file:
+    #     writer = csv.writer(file)
+    #     writer.writerow([B, S, tot_jobs, total_variables])
+
 else:
     print('Cant find a solution to this problem')

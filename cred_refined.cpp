@@ -422,21 +422,21 @@ int main()
         cout << endl;
     }
 
-    cout<<endl<<"scheduling of chunks"<<endl;
-    for(auto it : F) {
-        int chunk_id = it.first;
-        cout<<"****************"<<endl;
-        cout << "Chunk id: " << chunk_id << endl;
-        for(auto it1 : it.second) {
-            int machine_id = it1.first;
-            cout << "Time slots scheduled in machine: " << machine_id << " before deadline ";
-            for(auto it2 : it1.second) {
-                int deadline = it2.first;
-                int value = it2.second;
-                cout << deadline << " is: " << value << endl;
-            }
-        }
-    }
+    // cout<<endl<<"scheduling of chunks"<<endl;
+    // for(auto it : F) {
+    //     int chunk_id = it.first;
+    //     cout<<"****************"<<endl;
+    //     cout << "Chunk id: " << chunk_id << endl;
+    //     for(auto it1 : it.second) {
+    //         int machine_id = it1.first;
+    //         cout << "Time slots scheduled in machine: " << machine_id << " before deadline ";
+    //         for(auto it2 : it1.second) {
+    //             int deadline = it2.first;
+    //             int value = it2.second;
+    //             cout << deadline << " is: " << value << endl;
+    //         }
+    //     }
+    // }
     double utilisation =0;
     int c =0;
     for (const auto& pair : machines_to_chunks) 
