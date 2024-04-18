@@ -160,8 +160,6 @@ bool schedule(deque<int>&q, int s, int e, int S, int d, int m, bool pass1=true, 
 double scheduleVMs(int machine_id)
 {
     cout<<"Schedule in machine : "<<machine_id<<endl<<endl;
-    map<int,int> timeslots;
-    map<int,int> lastscheduled;
     auto maxdealine = deadlines.rbegin();
     vector<vector<int>> VMs (S, vector<int>(*maxdealine)); //Chunk ID, Job ID
     for (auto rit = deadlines.rbegin(); rit != deadlines.rend(); rit++) 
@@ -222,21 +220,24 @@ double scheduleVMs(int machine_id)
     for(int i =0;i<S;i++)
     {
         cout<<"Scheudle for VM "<<i+1<<" : "<<endl;
+        int local =0;
         for(int j = 0;j<*maxdealine;j++)
         {
             if(VMs[i][j]!=0)
             {
                 cout<<"Time "<<j<<" - Chunk: "<<VMs[i][j]<<" Job: "<<getJob(VMs[i][j])<<endl;
                 utilisation++;
+                local++;
             }
-            else
+            else;
             cout<<"Time "<<j<<" - Free"<<endl;
 
         }
+        cout<<"Utilisation For VM:  "<<(double)local/(*maxdealine);
         cout<<endl;
     }
 
-    //Assert to check that all chunks are assigned
+    // Assert to check that all chunks are assigned
     for (auto it : machines_to_chunks[machine_id]) {
         if (F[it][machine_id][0]) 
         {
@@ -423,10 +424,12 @@ int main()
     }
 
     cout<<endl<<"scheduling of chunks"<<endl;
+    int numRep=0;
     for(auto it : F) {
         int chunk_id = it.first;
         cout<<"****************"<<endl;
         cout << "Chunk id: " << chunk_id << endl;
+        numRep+=it.second.size()-1;
         for(auto it1 : it.second) {
             int machine_id = it1.first;
             cout << "Time slots scheduled in machine: " << machine_id << " before deadline ";
@@ -448,4 +451,9 @@ int main()
     {
         cout<<"Average Machine Utilisation :    "<<utilisation/c<<endl;
     }
+
+    FILE* f = fopen("Results.csv","a+");
+    fprintf(f,"%d,%d\n",S,numRep);
+    fclose(f);
+
 }
