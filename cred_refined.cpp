@@ -233,8 +233,9 @@ double scheduleVMs(int machine_id)
             cout<<"Time "<<j<<" - Free"<<endl;
 
         }
-        cout<<"Utilisation For VM:  "<<(double)local/(*maxdealine);
-        cout<<endl;
+        cout<<"---------------------------"<<endl;
+        cout<<"Utilisation For VM: "<<((double)local/(*maxdealine))*100<<"%"<<endl;
+        cout<<"---------------------------"<<endl<<endl;
     }
 
     // Assert to check that all chunks are assigned
@@ -245,7 +246,8 @@ double scheduleVMs(int machine_id)
         }
         assert(F[it][machine_id][0] == 0 && "Chunks are not assigned");
     }
-    cout<<"Machine utilisation :    "<<(double)utilisation/Total<<endl<<endl;
+    cout<<"Machine utilisation: "<<((double)utilisation/Total)*100<<"%"<<endl;
+    cout<<"******************************"<<endl<<endl;
     return (double)utilisation/Total;
 }
 
@@ -307,6 +309,7 @@ int main()
 
     //Phase 1
     int m = 0; // Starting with 1 machine
+    int numRep = 0;
     for(auto it = deadlines.begin(); it!=deadlines.end(); it++)
     {
         set<int>machines_scheduled; // To store the new machines that have been created for this deadline
@@ -423,21 +426,22 @@ int main()
         cout << endl;
     }
 
-    // cout<<endl<<"scheduling of chunks"<<endl;
-    // for(auto it : F) {
-    //     int chunk_id = it.first;
-    //     cout<<"****************"<<endl;
-    //     cout << "Chunk id: " << chunk_id << endl;
-    //     for(auto it1 : it.second) {
-    //         int machine_id = it1.first;
-    //         cout << "Time slots scheduled in machine: " << machine_id << " before deadline ";
-    //         for(auto it2 : it1.second) {
-    //             int deadline = it2.first;
-    //             int value = it2.second;
-    //             cout << deadline << " is: " << value << endl;
-    //         }
-    //     }
-    // }
+    cout<<endl<<"scheduling of chunks"<<endl;
+    for(auto it : F) {
+        int chunk_id = it.first;
+        // cout<<"****************"<<endl;
+        // cout << "Chunk id: " << chunk_id << endl;
+        // numRep+=it.second.size()-1;
+        // for(auto it1 : it.second) {
+        //     int machine_id = it1.first;
+        //     cout << "Time slots scheduled in machine: " << machine_id << " before deadline ";
+        //     for(auto it2 : it1.second) {
+        //         int deadline = it2.first;
+        //         int value = it2.second;
+        //         cout << deadline << " is: " << value << endl;
+        //     }
+        //}
+    }
     double utilisation =0;
     int c =0;
     for (const auto& pair : machines_to_chunks) 
@@ -447,11 +451,12 @@ int main()
     }
     if(c)
     {
-        cout<<"Average Machine Utilisation :    "<<utilisation/c<<endl;
+        cout<<"Average Machine Utilisation : "<<(utilisation/c)*100<<"%"<<endl;
     }
-
-    FILE* f = fopen("Results.csv","a+");
-    fprintf(f,"%d,%d\n",S,numRep);
-    fclose(f);
+    
+    cout<<"Total Number of Replications: "<<numRep<<endl<<endl;
+    // FILE* f = fopen("Results.csv","a+");
+    // fprintf(f,"%d,%d\n",S,numRep);
+    // fclose(f);
 
 }
