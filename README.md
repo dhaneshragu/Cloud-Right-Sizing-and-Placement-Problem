@@ -1,23 +1,36 @@
-# Cloud-Right-Sizing-and-Placement-Problem
+# Placement and Scheduling of Data Intensive Jobs in Edge-Cloud System
 ## Dhanesh V : 210101117, Ketan Singh : 210101118, Harshit Singh Pakhariya : 210101048
-CS528 (High Performance Computing) Course project of Jan-May 2024 Semester
+
+Readme for running the code submitted for CS528 Course Project, Jan-May 2024 Semester.
 
 # Instructions to run the program
 
 ## Linear Programming solution
-To run the python program for LPP solution using `Gurobipy` library
+To run the python program for LPP solution using `Gurobipy` library. Note that you might have to install `Gurobi` (academic license version in IITG Intranet), whose instructions can be found at [this link](https://support.gurobi.com/hc/en-us/articles/4534601245713-How-do-I-get-started-with-Gurobi-for-academic-users). Then in terminal,
 1. `pip install -r requirements.txt`
-2. `python lpp.py <tc file name>`
+2. `python lpp.py <tc file path>`
 
-## Polynomial Cloud Right Sizing Algorithm solution
+## Polynomial Main solution
 - To run the program for this (in windows):
- ```g++ cred_refined.cpp && a.exe < <path to testcase txt file>```
+ ```g++ minimize_nodes.cpp && a.exe <tc file path>```
 
 - If you want to give input in the format mentioned for Test cases through `stdin`,
- ```g++ cred_refined.cpp && a.exe```
+ ```g++ minimize_nodes.cpp && a.exe```
 
 ## First Fit Heuristic solution
 - To run the program for this (in windows):
- ```g++ first_fit.cpp && a.exe < <path to textcase txt file>```
+ ```g++ first_fit.cpp && a.exe <tc file path>```
 - If you want to give input in the format mentioned for Test cases through `stdin`,
- ```g++ cred_refined.cpp && a.exe```
+ ```g++ first_fit.cpp && a.exe```
+
+## Best Fit Heuristic solution
+- To run the program for this (in windows):
+ ```g++ best_fit.cpp && a.exe <tc file path>```
+- If you want to give input in the format mentioned for Test cases through `stdin`,
+ ```g++ best_fit.cpp && a.exe```
+
+## Trying with only placement constraint
+- To run the program for this (in windows):
+ ```g++ deadline_oblivious.cpp && a.exe <tc file path>```
+- If you want to give input in the format mentioned for Test cases through `stdin`,
+ ```g++ deadline_oblivious.cpp && a.exe```
