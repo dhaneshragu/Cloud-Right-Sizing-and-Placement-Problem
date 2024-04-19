@@ -99,6 +99,7 @@ for machines in range(1,N+1):
 
 model.setObjective(objective,GRB.MINIMIZE)
 model.optimize()
+model.write("lpp_formulation.lp")
 
 # Post Processing
 active_machines = [] # For getting list of active machines

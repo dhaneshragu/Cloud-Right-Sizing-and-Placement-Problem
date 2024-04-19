@@ -426,12 +426,12 @@ int main()
         cout << endl;
     }
 
-    cout<<endl<<"scheduling of chunks"<<endl;
+    //cout<<endl<<"scheduling of chunks"<<endl;
     for(auto it : F) {
         int chunk_id = it.first;
         // cout<<"****************"<<endl;
         // cout << "Chunk id: " << chunk_id << endl;
-        // numRep+=it.second.size()-1;
+        numRep+=it.second.size()-1;
         // for(auto it1 : it.second) {
         //     int machine_id = it1.first;
         //     cout << "Time slots scheduled in machine: " << machine_id << " before deadline ";

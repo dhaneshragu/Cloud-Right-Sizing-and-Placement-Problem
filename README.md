@@ -3,6 +3,33 @@
 
 Readme for running the code submitted for CS528 Course Project, Jan-May 2024 Semester.
 
+# Instructions to generate testcase
+
+- To generate test cases,
+```
+g++ generate_tc.cpp ; a.exe B S K
+```
+Where
+- `B` = Number of chunks that can be hosted in a Cloud Server
+- `S` = Number of VMs in a Server
+- `K` = Total Number of Jobs
+
+`testcase.txt` will be generated in the same directory.
+
+## TC format
+```
+B (Number of blocks)
+S (Number of VMs in each machine)
+K (Total number of jobs)
+J1 (Job Id) D1 (Deadline) C1 (Number of Chunks accessed)
+C1 Chunk Ids follow
+.
+.
+.
+JK DK CK
+CK Chunk Ids
+```
+
 # Instructions to run the program
 
 ## Linear Programming solution

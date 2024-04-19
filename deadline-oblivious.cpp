@@ -114,5 +114,5 @@ int main()
     }
     cout<<endl;
     cout<<"Total Number of Jobs whose deadlines missed:- "<<deadlinesMissed<<endl;
-    cout<<k<<" "<<deadlinesMissed<<"\n";
+    cout<<"Total number of machines used:- "<<ans.size()<<endl;
 }
