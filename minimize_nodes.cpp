@@ -229,7 +229,7 @@ double scheduleVMs(int machine_id)
                 utilisation++;
                 local++;
             }
-            else;
+            else
             cout<<"Time "<<j<<" - Free"<<endl;
 
         }
