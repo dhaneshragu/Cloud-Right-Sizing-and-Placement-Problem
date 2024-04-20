@@ -22,9 +22,7 @@ Schedule in machine : 1
 
 Scheudle for VM 1 :
 Time 0 - Chunk: 3 Job: 2
-Time 0 - Free
 Time 1 - Chunk: 2 Job: 2
-Time 1 - Free
 ---------------------------
 Utilisation For VM: 100%
 ---------------------------
@@ -43,16 +41,13 @@ Schedule in machine : 2
 
 Scheudle for VM 1 :
 Time 0 - Chunk: 1 Job: 1
-Time 0 - Free
 Time 1 - Chunk: 1 Job: 1
-Time 1 - Free
 ---------------------------
 Utilisation For VM: 100%
 ---------------------------
 
 Scheudle for VM 2 : 
 Time 0 - Chunk: 4 Job: 2
-Time 0 - Free
 Time 1 - Free
 ---------------------------
 Utilisation For VM: 50%
@@ -65,18 +60,14 @@ Schedule in machine : 3
 
 Scheudle for VM 1 :
 Time 0 - Chunk: 5 Job: 3
-Time 0 - Free
 Time 1 - Chunk: 5 Job: 3
-Time 1 - Free
 ---------------------------
 Utilisation For VM: 100%
 ---------------------------
 
 Scheudle for VM 2 :
 Time 0 - Chunk: 1 Job: 1
-Time 0 - Free
 Time 1 - Chunk: 1 Job: 4
-Time 1 - Free
 ---------------------------
 Utilisation For VM: 100%
 ---------------------------
@@ -88,16 +79,13 @@ Schedule in machine : 4
 
 Scheudle for VM 1 :
 Time 0 - Chunk: 1 Job: 4
-Time 0 - Free
 Time 1 - Chunk: 1 Job: 5
-Time 1 - Free
 ---------------------------
 Utilisation For VM: 100%
 ---------------------------
 
 Scheudle for VM 2 :
 Time 0 - Chunk: 5 Job: 5
-Time 0 - Free
 Time 1 - Free
 ---------------------------
 Utilisation For VM: 50%
